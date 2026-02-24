@@ -82,6 +82,9 @@ export const verifyOtpToken = mutation({
             .withIndex("by_email", (q) => q.eq("email", args.email))
             .first();
 
+        console.log("verifyOtpToken - Provided OTP:", args.otp);
+        console.log("verifyOtpToken - DB OTP Record:", record);
+
         if (!record || record.otp !== args.otp) {
             throw new Error("Wrong OTP, try again");
         }
