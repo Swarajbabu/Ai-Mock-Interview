@@ -42,13 +42,14 @@ export const sendOtpAction = action({
 
 // Verify Google Token string from the frontend
 export const verifyGoogleToken = action({
-    args: { credential: v.string() },
+    args: { credential: v.string(), clientId: v.optional(v.string()) },
     handler: async (ctx, args) => {
-        const clientId = process.env.GOOGLE_CLIENT_ID;
+        // Use backend env var, or fallback to the frontend's provided client ID
+        const clientId = process.env.GOOGLE_CLIENT_ID || args.clientId;
         let email, name, picture;
 
-        if (!clientId) {
-            console.warn("Missing GOOGLE_CLIENT_ID in Convex Dashboard! Faking it for dev.");
+        if (!clientId || clientId.includes("your-google-client-id-here")) {
+            console.warn("Missing valid GOOGLE_CLIENT_ID! Faking it for dev.");
             email = "mockuser@example.com";
             name = "Test Candidate Mode";
             picture = "https://api.dicebear.com/7.x/avataaars/svg?seed=mockcandidate&backgroundColor=b6e3f4";

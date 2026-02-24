@@ -75,7 +75,11 @@ const Login = () => {
     const handleGoogleSuccess = async (credentialResponse) => {
         setError(null);
         try {
-            const response = await verifyGoogleToken({ credential: credentialResponse.credential });
+            const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+            const response = await verifyGoogleToken({
+                credential: credentialResponse.credential,
+                clientId: clientId
+            });
             if (!response.success) throw new Error('Google auth failed');
 
             if (response.userId) {
