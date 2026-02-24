@@ -8,6 +8,7 @@ export const createUser = mutation({
         password: v.optional(v.string()),
         isGoogleUser: v.boolean(),
         fullName: v.optional(v.string()),
+        phone: v.optional(v.string()),
         profilePic: v.optional(v.string())
     },
     handler: async (ctx, args) => {
@@ -26,6 +27,7 @@ export const createUser = mutation({
                 password: args.password,
                 isGoogleUser: args.isGoogleUser,
                 fullName: args.fullName,
+                phone: args.phone,
                 profilePic: args.profilePic,
                 createdAt: Date.now(),
             });
@@ -81,7 +83,7 @@ export const verifyOtpToken = mutation({
             .first();
 
         if (!record || record.otp !== args.otp) {
-            throw new Error("Incorrect or expired OTP");
+            throw new Error("Wrong OTP, try again");
         }
 
         // Ensure not expired (e.g. 5 minutes = 300000 ms)

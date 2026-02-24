@@ -1,10 +1,17 @@
 import React from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogOut, Home, Video, User } from 'lucide-react';
 
 const MainLayout = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const isInterviewPage = location.pathname.includes('/interview');
+
+    const handleSignOut = () => {
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userEmail');
+        navigate('/login');
+    };
 
     // Hide nav on the actual interview page for full focus
     if (isInterviewPage) {
@@ -38,7 +45,10 @@ const MainLayout = () => {
                                 <User className="w-4 h-4" />
                                 Profile
                             </Link>
-                            <button className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-red-500 transition-colors ml-4 border-l border-slate-200 pl-4">
+                            <button
+                                onClick={handleSignOut}
+                                className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-red-500 transition-colors ml-4 border-l border-slate-200 pl-4"
+                            >
                                 <LogOut className="w-4 h-4" />
                                 Sign Out
                             </button>

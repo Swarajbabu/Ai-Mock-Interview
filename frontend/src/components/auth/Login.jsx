@@ -13,6 +13,10 @@ const Login = () => {
     const [otp, setOtp] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [phone, setPhone] = useState('');
+    const [countryCode, setCountryCode] = useState('+1');
+    const [fullName, setFullName] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const navigate = useNavigate();
 
     // Convex Hooks
@@ -22,14 +26,49 @@ const Login = () => {
     const sendOtpAction = useAction(api.authActions.sendOtpAction);
     const verifyGoogleToken = useAction(api.authActions.verifyGoogleToken);
 
+    const validatePassword = (pass) => {
+        const minLength = pass.length > 8;
+        const hasUpper = /[A-Z]/.test(pass);
+        const hasNumber = /[0-9]/.test(pass);
+        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pass);
+
+        if (!minLength) return "Password must be greater than 8 characters long.";
+        if (!hasUpper) return "Password must contain at least one uppercase letter.";
+        if (!hasNumber) return "Password must contain at least one number.";
+        if (!hasSpecial) return "Password must contain at least one special character.";
+
+        return null; // Valid
+    };
+
     const handleCredentialsSubmit = async (e) => {
         e.preventDefault();
         setError(null);
+
+        if (mode === 'register') {
+            if (password !== confirmPassword) {
+                setError("Passwords do not match.");
+                return;
+            }
+
+            const passwordError = validatePassword(password);
+            if (passwordError) {
+                setError(passwordError);
+                return;
+            }
+        }
+
         setLoading(true);
 
         try {
             if (mode === 'register') {
-                await createUser({ email, password, isGoogleUser: false });
+                const fullPhoneNumber = `${countryCode}${phone}`;
+                await createUser({
+                    email,
+                    password,
+                    isGoogleUser: false,
+                    fullName,
+                    phone: fullPhoneNumber
+                });
             } else {
                 await checkCredentials({ email, password });
             }
@@ -66,7 +105,9 @@ const Login = () => {
             navigate('/dashboard');
 
         } catch (err) {
-            setError(err.message);
+            // Convex error messages sometimes have prefixes
+            const cleanMessage = err.message.replace(/^(Uncaught Error:|ConvexError:)\s*/, "").replace(/^\[.*?\]\s*/, "").trim();
+            setError(cleanMessage || "Wrong OTP, try again");
         } finally {
             setLoading(false);
         }
@@ -94,8 +135,8 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4">
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-soft-lg border border-slate-100 p-8">
+        <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4 py-12">
+            <div className={`w-full ${mode === 'register' ? 'max-w-xl' : 'max-w-md'} bg-white rounded-2xl shadow-soft-lg border border-slate-100 p-8 transition-all duration-300`}>
 
                 <div className="text-center mb-6">
                     <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -120,6 +161,55 @@ const Login = () => {
                 {step === 1 ? (
                     <>
                         <form onSubmit={handleCredentialsSubmit} className="space-y-4">
+                            {mode === 'register' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <UserPlus className="h-5 w-5 text-slate-400" />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                value={fullName}
+                                                onChange={(e) => setFullName(e.target.value)}
+                                                className="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-lg text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-slate-50 focus:bg-white"
+                                                placeholder="John Doe"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Mobile Number</label>
+                                        <div className="flex border border-slate-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-colors">
+                                            <select
+                                                value={countryCode}
+                                                onChange={(e) => setCountryCode(e.target.value)}
+                                                className="bg-slate-50 text-slate-700 border-none py-2.5 pl-3 pr-8 focus:ring-0 text-sm border-r border-slate-200"
+                                            >
+                                                <option value="+1">+1 (US/CA)</option>
+                                                <option value="+44">+44 (UK)</option>
+                                                <option value="+91">+91 (IN)</option>
+                                                <option value="+61">+61 (AU)</option>
+                                                <option value="+81">+81 (JP)</option>
+                                                <option value="+49">+49 (DE)</option>
+                                                <option value="+33">+33 (FR)</option>
+                                                <option value="+971">+971 (AE)</option>
+                                            </select>
+                                            <input
+                                                type="tel"
+                                                value={phone}
+                                                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                                                className="block w-full px-3 py-2.5 border-none text-slate-900 focus:ring-0 bg-slate-50 focus:bg-white"
+                                                placeholder="Phone Number"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
                                 <div className="relative">
@@ -137,27 +227,51 @@ const Login = () => {
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Lock className="h-5 w-5 text-slate-400" />
+                            <div className={mode === 'register' ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : ''}>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <Lock className="h-5 w-5 text-slate-400" />
+                                        </div>
+                                        <input
+                                            type="password"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-lg text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-slate-50 focus:bg-white"
+                                            placeholder="••••••••"
+                                            required
+                                        />
                                     </div>
-                                    <input
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-lg text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-slate-50 focus:bg-white"
-                                        placeholder="••••••••"
-                                        required
-                                    />
+                                    {mode === 'register' && (
+                                        <p className="text-xs text-slate-500 mt-1 ml-1">&gt;8 chars, 1 uppercase, 1 number, 1 special</p>
+                                    )}
                                 </div>
+
+                                {mode === 'register' && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Confirm Password</label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <Lock className="h-5 w-5 text-slate-400" />
+                                            </div>
+                                            <input
+                                                type="password"
+                                                value={confirmPassword}
+                                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                                className="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-lg text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-slate-50 focus:bg-white"
+                                                placeholder="••••••••"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:bg-blue-300"
+                                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:bg-blue-300 mt-2"
                             >
                                 {loading ? 'Please wait...' : (mode === 'login' ? 'Sign in' : 'Create Account')}
                             </button>
