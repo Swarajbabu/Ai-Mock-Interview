@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-text font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .glass-effect {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-soft;
+  }
+  
+  .glass-effect-dark {
+    @apply bg-slate-900/70 backdrop-blur-md border border-white/10 shadow-soft;
+  }
+  
+  .min-h-screen-nav {
+    min-height: calc(100vh - 4rem);
+  }
+}
