@@ -14,10 +14,10 @@ const HomeDashboard = () => {
     };
 
     const handleStartInterview = () => {
-        if (cvFile && jobDescription) {
+        if (cvFile || jobDescription) {
             navigate('/interview');
         } else {
-            alert("Please upload CV and provide Job Description to continue.");
+            alert("Please upload a CV or provide a Job Description to continue.");
         }
     };
 
@@ -86,9 +86,9 @@ const HomeDashboard = () => {
                     <div className="flex justify-end pt-2">
                         <button
                             onClick={handleStartInterview}
-                            disabled={!cvFile || !jobDescription}
+                            disabled={!cvFile && !jobDescription}
                             className={`flex items-center gap-2 px-8 py-3.5 rounded-xl font-medium text-white shadow-sm transition-all
-                ${(cvFile && jobDescription)
+                ${(cvFile || jobDescription)
                                     ? 'bg-blue-600 hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5'
                                     : 'bg-slate-300 cursor-not-allowed'}`}
                         >
