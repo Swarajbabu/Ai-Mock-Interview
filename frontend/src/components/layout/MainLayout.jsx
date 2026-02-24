@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LogOut, Home, Video } from 'lucide-react';
+import { LogOut, Home, Video, User } from 'lucide-react';
 
 const MainLayout = () => {
     const location = useLocation();
@@ -33,6 +33,10 @@ const MainLayout = () => {
                             <Link to="/interview" className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">
                                 <Video className="w-4 h-4" />
                                 Practice
+                            </Link>
+                            <Link to="/profile" className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">
+                                <User className="w-4 h-4" />
+                                Profile
                             </Link>
                             <button className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-red-500 transition-colors ml-4 border-l border-slate-200 pl-4">
                                 <LogOut className="w-4 h-4" />

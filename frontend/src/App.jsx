@@ -7,6 +7,7 @@ import MainLayout from './components/layout/MainLayout';
 // Pages
 import Login from './components/auth/Login';
 import HomeDashboard from './components/dashboard/HomeDashboard';
+import Profile from './components/dashboard/Profile';
 import InterviewRoom from './components/interview/InterviewRoom';
 import ResultSummary from './components/evaluation/ResultSummary';
 
@@ -20,6 +21,7 @@ function App() {
                 {/* Protected Routes (Mocked with layout for now) */}
                 <Route element={<MainLayout />}>
                     <Route path="/dashboard" element={<HomeDashboard />} />
+                    <Route path="/profile" element={<Profile />} />
                     <Route path="/interview" element={<InterviewRoom />} />
                     <Route path="/evaluation" element={<ResultSummary />} />
                 </Route>

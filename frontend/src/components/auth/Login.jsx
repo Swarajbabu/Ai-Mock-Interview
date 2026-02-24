@@ -19,8 +19,8 @@ const Login = () => {
     const createUser = useMutation(api.auth.createUser);
     const checkCredentials = useMutation(api.auth.checkCredentials);
     const verifyOtpToken = useMutation(api.auth.verifyOtpToken);
-    const sendOtpAction = useAction(api.auth.sendOtpAction);
-    const verifyGoogleToken = useAction(api.auth.verifyGoogleToken);
+    const sendOtpAction = useAction(api.authActions.sendOtpAction);
+    const verifyGoogleToken = useAction(api.authActions.verifyGoogleToken);
 
     const handleCredentialsSubmit = async (e) => {
         e.preventDefault();

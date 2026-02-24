@@ -9,19 +9,21 @@ An AI-powered mock interview platform with frontend and backend components.
 
 ## Getting Started
 
-### Frontend
+### 1. Start the React Frontend
+Open a terminal and run:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### Backend
+### 2. Start Convex Sync
+Open a **second** terminal window and run:
 ```bash
-cd backend
-npm install
-npm start
+cd frontend
+npx convex dev
 ```
+*(This connects your local frontend to the real-time cloud database).*
 
 ## Features
 

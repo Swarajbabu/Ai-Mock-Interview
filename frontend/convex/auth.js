@@ -1,12 +1,15 @@
-import { mutation, action } from "./_generated/server";
+import { mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { api } from "./_generated/api";
-import nodemailer from "nodemailer";
-import { OAuth2Client } from "google-auth-library";
 
 // 1. Create a user (or return existing if Google)
 export const createUser = mutation({
-    args: { email: v.string(), password: v.optional(v.string()), isGoogleUser: v.boolean() },
+    args: {
+        email: v.string(),
+        password: v.optional(v.string()),
+        isGoogleUser: v.boolean(),
+        fullName: v.optional(v.string()),
+        profilePic: v.optional(v.string())
+    },
     handler: async (ctx, args) => {
         const existingUser = await ctx.db
             .query("users")
@@ -22,6 +25,8 @@ export const createUser = mutation({
                 email: args.email,
                 password: args.password,
                 isGoogleUser: args.isGoogleUser,
+                fullName: args.fullName,
+                profilePic: args.profilePic,
                 createdAt: Date.now(),
             });
         }
@@ -93,73 +98,5 @@ export const verifyOtpToken = mutation({
             .first();
 
         return user ? user._id : null;
-    }
-});
-
-// --- ACTIONS (Can execute external Node modules) ---
-
-// Send an email OTP
-export const sendOtpAction = action({
-    args: { email: v.string() },
-    handler: async (ctx, args) => {
-        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-        // Store in the DB via mutation
-        await ctx.runMutation(api.auth.storeOtp, { email: args.email, otp: otpCode });
-
-        const emailUser = process.env.EMAIL_USER;
-        const emailPass = process.env.EMAIL_PASS;
-
-        if (emailUser && emailPass) {
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: emailUser,
-                    pass: emailPass
-                }
-            });
-
-            await transporter.sendMail({
-                from: emailUser,
-                to: args.email,
-                subject: 'Mock Interview Login OTP',
-                text: `Your authentication code is: ${otpCode}. It will expire in 5 minutes.`
-            });
-            return { success: true };
-        } else {
-            console.warn(`[Mock Email] Variables not set. OTP for ${args.email} is ${otpCode}`);
-            return { success: true, warning: 'Email credentials not set', mockOtp: otpCode };
-        }
-    }
-});
-
-// Verify Google Token string from the frontend
-export const verifyGoogleToken = action({
-    args: { credential: v.string() },
-    handler: async (ctx, args) => {
-        const clientId = process.env.GOOGLE_CLIENT_ID;
-        if (!clientId) {
-            // We just warn and fake verify for local testing if env var isn't set yet
-            console.warn("Missing GOOGLE_CLIENT_ID in Convex Dashboard! Faking it for dev.");
-            return { success: true, email: "mockuser@example.com" };
-        }
-
-        const client = new OAuth2Client(clientId);
-        const ticket = await client.verifyIdToken({
-            idToken: args.credential,
-            audience: clientId
-        });
-
-        const payload = ticket.getPayload();
-        if (!payload) throw new Error("Invalid token payload");
-
-        const email = payload.email;
-
-        await ctx.runMutation(api.auth.createUser, {
-            email: email,
-            isGoogleUser: true
-        });
-
-        return { success: true, email };
     }
 });
